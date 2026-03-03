@@ -1,6 +1,7 @@
-from sqlalchemy import Column, DateTime, Integer, String
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from models.enums.user_role_enum import UserRoleEnum
 from database import Base
 
 
@@ -12,7 +13,10 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    role_id = Column(Integer, ForeignKey("user_role.id"), nullable=False, default=UserRoleEnum.USER)
 
     messages_sent = relationship("Message", foreign_keys="Message.sender_id", back_populates="sender")
     messages_received = relationship("Message", foreign_keys="Message.receiver_id", back_populates="receiver")
     friends = relationship("Friend", foreign_keys="Friend.user_id", back_populates="user")
+    posts = relationship("Post", foreign_keys="Post.user_id", back_populates="user")
+    role = relationship("UserRole", foreign_keys=[role_id])
