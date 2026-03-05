@@ -20,3 +20,4 @@ class User(Base):
     friends = relationship("Friend", foreign_keys="Friend.user_id", back_populates="user")
     posts = relationship("Post", foreign_keys="Post.user_id", back_populates="user")
     role = relationship("UserRole", foreign_keys=[role_id])
+    liked_posts = relationship("PostLike", backref="user", cascade="all, delete-orphan")

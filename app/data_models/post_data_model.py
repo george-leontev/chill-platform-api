@@ -13,3 +13,4 @@ class Post(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
 
     user = relationship("User", foreign_keys=[user_id], back_populates="posts")
+    likes = relationship("PostLike", backref="post", cascade="all, delete-orphan")
