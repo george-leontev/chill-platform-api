@@ -12,7 +12,9 @@ class PostService:
         self.like_repository = like_repository
 
     def get_all(self):
-        return self.post_repository.get_all()
+        posts = self.post_repository.get_all()
+
+        return posts
 
     def get_by_id(self, post_id: int):
         post = self.post_repository.get_by_id(post_id)
@@ -22,22 +24,29 @@ class PostService:
         return post
 
     def get_my_posts(self, user_id: int):
-        return self.post_repository.get_by_user_id(user_id)
+        posts = self.post_repository.get_by_user_id(user_id)
+
+        return posts
 
     def create(self, title: str, content: str, current_user: User):
-        return self.post_repository.create(title=title, content=content, user_id=current_user.id)
+        post = self.post_repository.create(title=title, content=content, user_id=current_user.id)
+        return post
 
     def update(self, post_id: int, title: str, content: str, current_user: User):
         post = self.get_by_id(post_id)
         self._check_ownership(post.user_id, current_user, action='редактирования')
 
-        return self.post_repository.update(post, title=title, content=content)
+        updated_post = self.post_repository.update(post, title=title, content=content)
+
+        return updated_post
 
     def delete(self, post_id: int, current_user: User):
         post = self.get_by_id(post_id)
         self._check_ownership(post.user_id, current_user, action='удаления')
 
-        return self.post_repository.delete(post)
+        deleted_post = self.post_repository.delete(post)
+
+        return deleted_post
 
     def toggle_like(self, post_id: int, current_user: User):
         self.get_by_id(post_id)
