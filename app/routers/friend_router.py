@@ -17,7 +17,7 @@ def get_friend_service(db_session: Session = Depends(get_db)) -> FriendService:
     )
 
 
-@router.get('/friends', tags=['Friends'], response_model=FriendsModel)
+@router.get('/friends', response_model=FriendsModel)
 async def get_accepted_friends(
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         friend_service: FriendService = Depends(get_friend_service)
@@ -27,7 +27,7 @@ async def get_accepted_friends(
     return friends
 
 
-@router.get('/friends/requests/incoming', tags=['Friends'], response_model=FriendsModel)
+@router.get('/friends/requests/incoming', response_model=FriendsModel)
 async def get_incoming_requests(
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         friend_service: FriendService = Depends(get_friend_service)
@@ -37,7 +37,7 @@ async def get_incoming_requests(
     return incoming
 
 
-@router.get('/friends/requests/outgoing', tags=['Friends'], response_model=FriendsModel)
+@router.get('/friends/requests/outgoing', response_model=FriendsModel)
 async def get_outgoing_requests(
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         friend_service: FriendService = Depends(get_friend_service)
@@ -47,7 +47,7 @@ async def get_outgoing_requests(
     return outgoing
 
 
-@router.get('/friends/{user_id}', tags=['Friends'], response_model=FriendModel)
+@router.get('/friends/{user_id}', response_model=FriendModel)
 async def get_friendship(
         user_id: int,
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
@@ -58,7 +58,7 @@ async def get_friendship(
     return friendship
 
 
-@router.post('/friends/{user_id}', tags=['Friends'], response_model=FriendModel)
+@router.post('/friends/{user_id}', response_model=FriendModel)
 async def send_friend_request(
         user_id: int,
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
@@ -69,7 +69,7 @@ async def send_friend_request(
     return friend_request
 
 
-@router.put('/friends/{user_id}/accept', tags=['Friends'], response_model=FriendModel)
+@router.put('/friends/{user_id}/accept', response_model=FriendModel)
 async def accept_friend_request(
         user_id: int,
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
@@ -80,7 +80,7 @@ async def accept_friend_request(
     return accepted
 
 
-@router.put('/friends/{user_id}/decline', tags=['Friends'], response_model=FriendModel)
+@router.put('/friends/{user_id}/decline', response_model=FriendModel)
 async def decline_friend_request(
         user_id: int,
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
@@ -91,7 +91,7 @@ async def decline_friend_request(
     return declined
 
 
-@router.delete('/friends/{user_id}', tags=['Friends'], response_model=FriendModel)
+@router.delete('/friends/{user_id}', response_model=FriendModel)
 async def remove_friend(
         user_id: int,
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),

@@ -19,13 +19,13 @@ def get_post_service(db_session: Session = Depends(get_db)) -> PostService:
         like_repository=PostLikeRepository(db_session)
     )
 
-@router.get('/posts', tags=['Posts'], response_model=PostsModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
+@router.get('/posts', response_model=PostsModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
 async def get_all_posts(post_service: PostService = Depends(get_post_service)):
     posts = post_service.get_all()
 
     return posts
 
-@router.get('/posts/my', tags=['Posts'], response_model=PostsModel)
+@router.get('/posts/my', response_model=PostsModel)
 async def get_my_posts(
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
         post_service: PostService = Depends(get_post_service)
@@ -34,13 +34,13 @@ async def get_my_posts(
 
     return posts
 
-@router.get('/posts/{post_id}', tags=['Posts'], response_model=PostModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
+@router.get('/posts/{post_id}', response_model=PostModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
 async def get_post_by_id(post_id: int, post_service: PostService = Depends(get_post_service)):
     post = post_service.get_by_id(post_id)
 
     return post
 
-@router.post('/posts', tags=['Posts'], response_model=PostModel)
+@router.post('/posts', response_model=PostModel)
 async def create_post(
         body: CreateOrUpdatePostModel,
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
@@ -50,7 +50,7 @@ async def create_post(
 
     return post
 
-@router.put('/posts/{post_id}', tags=['Posts'], response_model=PostModel)
+@router.put('/posts/{post_id}', response_model=PostModel)
 async def edit_post(
         post_id: int,
         body: CreateOrUpdatePostModel,
@@ -61,7 +61,7 @@ async def edit_post(
 
     return post
 
-@router.delete('/posts/{post_id}', tags=['Posts'], response_model=PostModel)
+@router.delete('/posts/{post_id}', response_model=PostModel)
 async def delete_post(
         post_id: int,
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
