@@ -22,18 +22,8 @@ def get_post_service(db_session: Session = Depends(get_db)) -> PostService:
 @router.get('/posts', tags=['Posts'], response_model=PostsModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
 async def get_all_posts(post_service: PostService = Depends(get_post_service)):
     posts = post_service.get_all()
-    result = PostsModel(
-        items=[
-            PostModel(
-                id=p.id,
-                content=p.content,
-                title=p.title,
-                user_id=p.user_id
-            ) for p in posts
-        ]
-    )
 
-    return result
+    return posts
 
 @router.get('/posts/my', tags=['Posts'], response_model=PostsModel)
 async def get_my_posts(
@@ -41,30 +31,14 @@ async def get_my_posts(
         post_service: PostService = Depends(get_post_service)
     ):
     posts = post_service.get_my_posts(current_user.id)
-    result = PostsModel(
-        items=[
-            PostModel(
-                id=p.id,
-                content=p.content,
-                title=p.title,
-                user_id=p.user_id
-            ) for p in posts
-        ]
-    )
 
-    return result
+    return posts
 
 @router.get('/posts/{post_id}', tags=['Posts'], response_model=PostModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
 async def get_post_by_id(post_id: int, post_service: PostService = Depends(get_post_service)):
     post = post_service.get_by_id(post_id)
-    result = PostModel(
-        id=post.id,
-        title=post.title,
-        content=post.content,
-        user_id=post.user_id
-    )
 
-    return result
+    return post
 
 @router.post('/posts', tags=['Posts'], response_model=PostModel)
 async def create_post(
@@ -73,14 +47,8 @@ async def create_post(
         post_service: PostService = Depends(get_post_service)
     ):
     post = post_service.create(title=body.title, content=body.content, current_user=current_user)
-    result = PostModel(
-        id=post.id,
-        content=post.content,
-        title=post.title,
-        user_id=post.user_id
-    )
 
-    return result
+    return post
 
 @router.put('/posts/{post_id}', tags=['Posts'], response_model=PostModel)
 async def edit_post(
@@ -90,7 +58,8 @@ async def edit_post(
         post_service: PostService = Depends(get_post_service)
     ):
     post = post_service.update(post_id=post_id, title=body.title, content=body.content, current_user=current_user)
-    return PostModel(id=post.id, content=post.content, title=post.title, user_id=post.user_id)
+
+    return post
 
 @router.delete('/posts/{post_id}', tags=['Posts'], response_model=PostModel)
 async def delete_post(
@@ -99,14 +68,8 @@ async def delete_post(
         post_service: PostService = Depends(get_post_service)
     ):
     post = post_service.delete(post_id=post_id, current_user=current_user)
-    result = PostModel(
-        id=post.id,
-        title=post.title,
-        content=post.content,
-        user_id=post.user_id
-    )
 
-    return result
+    return post
 
 @router.post('/posts/{post_id}/like', response_model=PostLikeModel)
 async def toggle_like(

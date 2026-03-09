@@ -1,77 +1,104 @@
 from http import HTTPStatus
 from fastapi import HTTPException
+from mappers.post_mapper import PostMapper
+from models.post.post_model import PostModel, PostsModel
 from models.post_like_model import PostLikeModel
+from data_models.post_data_model import Post
+from data_models.post_likes_data_model import PostLike
 from data_models.user_data_model import User
 from models.enums.user_role_enum import UserRoleEnum
 from repositories.post_repository import PostRepository
 from repositories.post_like_repository import PostLikeRepository
 
+
 class PostService:
     def __init__(self, post_repository: PostRepository, like_repository: PostLikeRepository):
         self.post_repository = post_repository
         self.like_repository = like_repository
+        self.mapper = PostMapper()
 
-    def get_all(self):
+    def get_all(self) -> PostsModel:
         posts = self.post_repository.get_all()
 
-        return posts
+        result = self.mapper.to_list_model(posts)
 
-    def get_by_id(self, post_id: int):
+        return result
+
+    def get_by_id(self, post_id: int) -> PostModel:
         post = self.post_repository.get_by_id(post_id)
+
         if not post:
             raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Публикация не найдена.')
 
-        return post
+        result = self.mapper.to_model(post)
 
-    def get_my_posts(self, user_id: int):
+        return result
+
+    def get_my_posts(self, user_id: int) -> PostsModel:
         posts = self.post_repository.get_by_user_id(user_id)
 
-        return posts
+        result = self.mapper.to_list_model(posts)
 
-    def create(self, title: str, content: str, current_user: User):
+        return result
+
+    def create(self, title: str, content: str, current_user: User) -> PostModel:
         post = self.post_repository.create(title=title, content=content, user_id=current_user.id)
-        return post
 
-    def update(self, post_id: int, title: str, content: str, current_user: User):
-        post = self.get_by_id(post_id)
+        result = self.mapper.to_model(post)
+
+        return result
+
+    def update(self, post_id: int, title: str, content: str, current_user: User) -> PostModel:
+        post = self.post_repository.get_by_id(post_id)
+
+        if not post:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Публикация не найдена.')
+
         self._check_ownership(post.user_id, current_user, action='редактирования')
 
         updated_post = self.post_repository.update(post, title=title, content=content)
 
-        return updated_post
+        result = self.mapper.to_model(updated_post)
 
-    def delete(self, post_id: int, current_user: User):
-        post = self.get_by_id(post_id)
+        return result
+
+    def delete(self, post_id: int, current_user: User) -> PostModel:
+        post = self.post_repository.get_by_id(post_id)
+
+        if not post:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Публикация не найдена.')
+
         self._check_ownership(post.user_id, current_user, action='удаления')
 
         deleted_post = self.post_repository.delete(post)
 
-        return deleted_post
+        result = self.mapper.to_model(deleted_post)
 
-    def toggle_like(self, post_id: int, current_user: User):
-        self.get_by_id(post_id)
+        return result
+
+    def toggle_like(self, post_id: int, current_user: User) -> PostLikeModel:
+        post = self.post_repository.get_by_id(post_id)
+
+        if not post:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND, detail='Публикация не найдена.')
+
         existing = self.like_repository.get_like(user_id=current_user.id, post_id=post_id)
 
         if existing:
             like = self.like_repository.delete_like(existing)
 
-            return PostLikeModel(
-                user_id=like.user_id,
-                post_id=like.post_id,
-                liked=False
-            )
+            result = self.mapper.to_like_model(like, liked=False)
         else:
             like = self.like_repository.create_like(user_id=current_user.id, post_id=post_id)
 
-            return PostLikeModel(
-                user_id=like.user_id,
-                post_id=like.post_id,
-                liked=False
-            )
+            result = self.mapper.to_like_model(like, liked=True)
+
+        return result
 
     def _check_ownership(self, owner_id: int, current_user: User, action: str):
         is_owner = owner_id == current_user.id
         is_moderator = UserRoleEnum(current_user.role_id) == UserRoleEnum.MODERATOR
+
         if not is_owner and not is_moderator:
             raise HTTPException(
                 status_code=HTTPStatus.FORBIDDEN,

@@ -1,0 +1,67 @@
+from sqlalchemy.orm import Session
+from sqlalchemy import or_
+from data_models.friend_data_model import Friend
+from models.enums.friend_status_enum import FriendStatusEnum
+
+
+class FriendRepository:
+    def __init__(self, db_session: Session):
+        self.db_session = db_session
+
+    def get_accepted_friends(self, user_id: int) -> list[Friend]:
+        friends = self.db_session.query(Friend).filter(
+            or_(Friend.user_id == user_id, Friend.friend_id == user_id),
+            Friend.status_id == FriendStatusEnum.ACCEPTED.value
+        ).all()
+
+        return friends
+
+    def get_incoming_requests(self, user_id: int) -> list[Friend]:
+        incoming = self.db_session.query(Friend).filter(
+            Friend.friend_id == user_id,
+            Friend.status_id == FriendStatusEnum.PENDING.value
+        ).all()
+
+        return incoming
+
+    def get_outgoing_requests(self, user_id: int) -> list[Friend]:
+        outgoing = self.db_session.query(Friend).filter(
+            Friend.user_id == user_id,
+            Friend.status_id == FriendStatusEnum.PENDING.value
+        ).all()
+
+        return outgoing
+
+    def get_friendship(self, user_id: int, friend_id: int) -> Friend | None:
+        friendship = self.db_session.query(Friend).filter(
+            or_(
+                (Friend.user_id == user_id) & (Friend.friend_id == friend_id),
+                (Friend.user_id == friend_id) & (Friend.friend_id == user_id)
+            )
+        ).one_or_none()
+
+        return friendship
+
+    def create_friendship(self, user_id: int, friend_id: int) -> Friend:
+        friend_request = Friend(
+            user_id=user_id,
+            friend_id=friend_id,
+            status_id=FriendStatusEnum.PENDING.value
+        )
+
+        self.db_session.add(friend_request)
+        self.db_session.commit()
+
+        return friend_request
+
+    def update_friendship_status(self, friendship: Friend, status: FriendStatusEnum) -> Friend:
+        friendship.status_id = status
+        self.db_session.commit()
+
+        return friendship
+
+    def delete_friendship(self, friendship: Friend) -> Friend:
+        self.db_session.delete(friendship)
+        self.db_session.commit()
+
+        return friendship
