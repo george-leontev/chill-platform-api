@@ -11,7 +11,7 @@ class FriendRepository:
     def get_accepted_friends(self, user_id: int) -> list[Friend]:
         friends = self.db_session.query(Friend).filter(
             or_(Friend.user_id == user_id, Friend.friend_id == user_id),
-            Friend.status_id == FriendStatusEnum.ACCEPTED.value
+            Friend.status_id == FriendStatusEnum.ACCEPTED
         ).all()
 
         return friends
@@ -19,7 +19,7 @@ class FriendRepository:
     def get_incoming_requests(self, user_id: int) -> list[Friend]:
         incoming = self.db_session.query(Friend).filter(
             Friend.friend_id == user_id,
-            Friend.status_id == FriendStatusEnum.PENDING.value
+            Friend.status_id == FriendStatusEnum.PENDING
         ).all()
 
         return incoming
@@ -27,7 +27,7 @@ class FriendRepository:
     def get_outgoing_requests(self, user_id: int) -> list[Friend]:
         outgoing = self.db_session.query(Friend).filter(
             Friend.user_id == user_id,
-            Friend.status_id == FriendStatusEnum.PENDING.value
+            Friend.status_id == FriendStatusEnum.PENDING
         ).all()
 
         return outgoing
@@ -46,7 +46,7 @@ class FriendRepository:
         friend_request = Friend(
             user_id=user_id,
             friend_id=friend_id,
-            status_id=FriendStatusEnum.PENDING.value
+            status_id=FriendStatusEnum.PENDING
         )
 
         self.db_session.add(friend_request)

@@ -66,10 +66,10 @@ class FriendService:
         if friendship.friend_id != current_user_id:
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail='Вы не можете принять свой собственный запрос.')
 
-        if friendship.status_id != FriendStatusEnum.PENDING.value:
+        if friendship.status_id != FriendStatusEnum.PENDING:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='Запрос уже обработан.')
 
-        updated = self.friend_repository.update_friendship_status(friendship, FriendStatusEnum.ACCEPTED.value)
+        updated = self.friend_repository.update_friendship_status(friendship, FriendStatusEnum.ACCEPTED)
 
         result = self.mapper.to_model(updated)
 
@@ -84,10 +84,10 @@ class FriendService:
         if friendship.friend_id != current_user_id:
             raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail='Вы не можете отклонить свой собственный запрос.')
 
-        if friendship.status_id != FriendStatusEnum.PENDING.value:
+        if friendship.status_id != FriendStatusEnum.PENDING:
             raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='Запрос уже обработан.')
 
-        updated = self.friend_repository.update_friendship_status(friendship, FriendStatusEnum.DECLINED.value)
+        updated = self.friend_repository.update_friendship_status(friendship, FriendStatusEnum.DECLINED)
 
         result = self.mapper.to_model(updated)
 

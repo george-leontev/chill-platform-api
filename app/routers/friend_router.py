@@ -47,8 +47,8 @@ async def get_outgoing_requests(
     return outgoing
 
 
-@router.get('/friends/{user_id}/status', tags=['Friends'], response_model=FriendModel)
-async def get_friendship_status(
+@router.get('/friends/{user_id}', tags=['Friends'], response_model=FriendModel)
+async def get_friendship(
         user_id: int,
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         friend_service: FriendService = Depends(get_friend_service)
