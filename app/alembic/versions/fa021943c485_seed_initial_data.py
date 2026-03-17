@@ -1,11 +1,10 @@
-"""seed_initial_data
+"""seed initial data
 
-Revision ID: c7cb0244a8b6
-Revises: 80f982c8024d
-Create Date: 2026-03-02 15:10:28.320856
+Revision ID: fa021943c485
+Revises: 57204c54ed54
+Create Date: 2026-03-12 21:02:34.813151
 
 """
-from datetime import datetime
 from hashlib import sha256
 from typing import Sequence, Union
 
@@ -17,8 +16,8 @@ from models.enums.user_role_enum import UserRoleEnum
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'c7cb0244a8b6'
-down_revision: Union[str, Sequence[str], None] = '80f982c8024d'
+revision: str = 'fa021943c485'
+down_revision: Union[str, Sequence[str], None] = '57204c54ed54'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -26,7 +25,6 @@ password = '123456789'
 hashed_password = sha256(password.encode(encoding="utf-8")).hexdigest()
 
 def upgrade():
-    # Seed user roles
     roles_table = sa.table('user_role',
         sa.column('id', sa.Integer),
         sa.column('role', sa.String),
@@ -37,7 +35,6 @@ def upgrade():
         {'id': UserRoleEnum.USER, 'role': 'USER'},
     ])
 
-    # Seed friend statuses
     status_table = sa.table('friend_status',
         sa.column('id', sa.Integer),
         sa.column('status', sa.String),
@@ -48,17 +45,16 @@ def upgrade():
         {'id': FriendStatusEnum.ACCEPTED, 'status': 'accepted'},
     ])
 
-    # Seed test users (with password hashed - use bcrypt)
-    from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
     users_table = sa.table('users',
         sa.column('id', sa.Integer),
         sa.column('email', sa.String),
         sa.column('username', sa.String),
         sa.column('password', sa.String),
         sa.column('role_id', sa.Integer),
-        sa.column('created_at', sa.DateTime)
+        sa.column('created_at', sa.DateTime),
+        sa.column('first_name', sa.String),
+        sa.column('last_name', sa.String),
+        sa.column('age', sa.Integer),
     )
 
     op.bulk_insert(users_table, [
@@ -66,6 +62,9 @@ def upgrade():
             'id': 1,
             'email': 'MODERATOR@example.com',
             'username': 'MODERATOR',
+            'first_name': 'Egor',
+            'last_name': 'Leontev',
+            'age': 12,
             'password': hashed_password,
             'role_id': UserRoleEnum.MODERATOR,
         },
@@ -73,6 +72,9 @@ def upgrade():
             'id': 2,
             'email': 'john@example.com',
             'username': 'john_doe',
+            'first_name': 'Egor',
+            'last_name': 'Leontev',
+            'age': 22,
             'password': hashed_password,
             'role_id': UserRoleEnum.USER,
         },
@@ -80,12 +82,14 @@ def upgrade():
             'id': 3,
             'email': 'jane@example.com',
             'username': 'jane_smith',
+            'first_name': 'Egor',
+            'last_name': 'Leontev',
+            'age': 19,
             'password':hashed_password,
             'role_id': UserRoleEnum.USER,
         },
     ])
 
-    # Seed posts
     posts_table = sa.table('posts',
         sa.column('id', sa.Integer),
         sa.column('title', sa.String),
@@ -118,7 +122,6 @@ def upgrade():
         },
     ])
 
-    # Seed messages
     messages_table = sa.table('messages',
         sa.column('id', sa.Integer),
         sa.column('content', sa.String),
@@ -147,7 +150,6 @@ def upgrade():
         },
     ])
 
-    # Seed friends
     friends_table = sa.table('friends',
         sa.column('id', sa.Integer),
         sa.column('user_id', sa.Integer),
@@ -174,7 +176,6 @@ def upgrade():
     ])
 
 def downgrade():
-    # Remove seeded data in reverse order (respect foreign key constraints)
     op.execute("DELETE FROM friends WHERE id IN (1, 2)")
     op.execute("DELETE FROM messages WHERE id IN (1, 2)")
     op.execute("DELETE FROM posts WHERE id IN (1, 2, 3)")

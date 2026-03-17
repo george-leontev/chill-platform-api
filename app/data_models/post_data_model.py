@@ -11,6 +11,8 @@ class Post(Base):
     title = Column(Text, nullable=False)
     content = Column(Text, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User", foreign_keys=[user_id], back_populates="posts")
     likes = relationship("PostLike", backref="post", cascade="all, delete-orphan")
+    images = relationship("PostImage", back_populates="post", cascade="all, delete-orphan", order_by="PostImage.order_index")

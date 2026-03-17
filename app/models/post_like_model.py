@@ -7,3 +7,5 @@ class PostLikeModel(AppBaseModel):
     post_id: int
 
     liked: bool
+
+    like_count: int

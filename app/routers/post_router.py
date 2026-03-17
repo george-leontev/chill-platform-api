@@ -19,9 +19,12 @@ def get_post_service(db_session: Session = Depends(get_db)) -> PostService:
         like_repository=PostLikeRepository(db_session)
     )
 
-@router.get('/posts', response_model=PostsModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
-async def get_all_posts(post_service: PostService = Depends(get_post_service)):
-    posts = post_service.get_all()
+@router.get('/posts', response_model=PostsModel)
+async def get_all_posts(
+        current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
+        post_service: PostService = Depends(get_post_service)
+    ):
+    posts = post_service.get_all(current_user.id)
 
     return posts
 
@@ -34,9 +37,22 @@ async def get_my_posts(
 
     return posts
 
-@router.get('/posts/{post_id}', response_model=PostModel, dependencies=[Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER]))])
-async def get_post_by_id(post_id: int, post_service: PostService = Depends(get_post_service)):
-    post = post_service.get_by_id(post_id)
+@router.get('/posts/liked', response_model=PostsModel)
+async def get_liked_posts(
+        current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
+        post_service: PostService = Depends(get_post_service)
+    ):
+    posts = post_service.get_liked_posts(current_user.id)
+
+    return posts
+
+@router.get('/posts/{post_id}', response_model=PostModel)
+async def get_post_by_id(
+        post_id: int,
+        current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
+        post_service: PostService = Depends(get_post_service)
+    ):
+    post = post_service.get_by_id(post_id, current_user.id)
 
     return post
 
@@ -46,7 +62,7 @@ async def create_post(
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
         post_service: PostService = Depends(get_post_service)
     ):
-    post = post_service.create(title=body.title, content=body.content, current_user=current_user)
+    post = post_service.create(title=body.title, content=body.content, current_user=current_user, images=body.images)
 
     return post
 
@@ -57,7 +73,7 @@ async def edit_post(
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
         post_service: PostService = Depends(get_post_service)
     ):
-    post = post_service.update(post_id=post_id, title=body.title, content=body.content, current_user=current_user)
+    post = post_service.update(post_id=post_id, title=body.title, content=body.content, current_user=current_user, images=body.images)
 
     return post
 
