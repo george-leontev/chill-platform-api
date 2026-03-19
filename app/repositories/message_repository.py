@@ -1,6 +1,7 @@
-from sqlalchemy import case, func, or_
+from sqlalchemy import case, func, or_, select
 from sqlalchemy.orm import Session
 from data_models.message_data_model import Message
+from data_models.user_data_model import User
 
 
 class MessageRepository:
@@ -43,26 +44,49 @@ class MessageRepository:
         self.db_session.commit()
 
     def get_conversations(self, user_id: int) -> list:
-        # get last message and unread count per conversation partner
+        partner_id_case = case(
+            (Message.sender_id == user_id, Message.receiver_id),
+            else_=Message.sender_id
+        )
+
+        # Subquery to get the last message content for each conversation
+        last_message_subquery = (
+            select(Message.content)
+            .where(
+                or_(
+                    (Message.sender_id == user_id) & (Message.receiver_id == partner_id_case),
+                    (Message.sender_id == partner_id_case) & (Message.receiver_id == user_id)
+                )
+            )
+            .order_by(Message.created_at.desc())
+            .limit(1)
+            .correlate()
+            .scalar_subquery()
+        )
+
         conversations = self.db_session.query(
-            case(
-                (Message.sender_id == user_id, Message.receiver_id),
-                else_=Message.sender_id
-            ).label("partner_id"),
+            partner_id_case.label("partner_id"),
+            User.id.label("partner_user_id"),
+            User.username.label("partner_username"),
+            User.first_name.label("partner_first_name"),
+            User.last_name.label("partner_last_name"),
             func.max(Message.created_at).label("last_message_at"),
-            func.max(Message.content).label("last_message"),
+            last_message_subquery.label("last_message"),
             func.count(
                 case((
                     (Message.receiver_id == user_id) & (Message.is_read == False), 1
                 ))
             ).label("unread_count")
+        ).join(
+            User, User.id == partner_id_case
         ).filter(
             or_(Message.sender_id == user_id, Message.receiver_id == user_id)
         ).group_by(
-            case(
-                (Message.sender_id == user_id, Message.receiver_id),
-                else_=Message.sender_id
-            )
+            partner_id_case,
+            User.id,
+            User.username,
+            User.first_name,
+            User.last_name
         ).order_by(func.max(Message.created_at).desc()).all()
 
         return conversations

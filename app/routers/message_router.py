@@ -1,3 +1,5 @@
+from http.client import HTTPException
+
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from models.conversation_model import ConversationsModel
@@ -61,8 +63,20 @@ async def websocket_messages(
         token: str,
         db_session: Session = Depends(get_db)
     ):
-    payload = verify_token_from_string(token)
-    current_user_id = payload.get("id")
+    print("WebSocket connection attempt with token:", token)
+
+    try:
+        payload = verify_token_from_string(token)
+    except HTTPException as e:
+        print(f"Token verification failed: {e.detail}")
+        await websocket.close(code=4001, reason=e.detail)
+        return
+
+    current_user_id = payload.get("user_id")
+
+    if not current_user_id:
+        await websocket.close(code=4002, reason="Invalid token payload")
+        return
 
     await manager.connect(current_user_id, websocket)
 
@@ -76,8 +90,16 @@ async def websocket_messages(
 
             # -- new message --
             if event_type == "new_message":
-                receiver_id = data.get("receiver_id")
+                print(f"Received message data: {data}")
+                receiver_id = data.get("receiverId") or data.get("receiver_id")
                 content = data.get("content")
+
+                if not receiver_id:
+                    await websocket.send_json({
+                        "type": "error",
+                        "data": {"message": "receiverId is required"}
+                    })
+                    continue
 
                 message = service.create(
                     sender_id=current_user_id,
@@ -87,21 +109,14 @@ async def websocket_messages(
 
                 payload = {
                     "type": "new_message",
-                    "data": {
-                        "id": message.id,
-                        "sender_id": message.sender_id,
-                        "receiver_id": message.receiver_id,
-                        "content": message.content,
-                        "created_at": str(message.created_at)
-                    }
+                    "data": message.model_dump(by_alias=True)
                 }
 
                 await manager.send_to_user(receiver_id, payload)
                 await manager.send_to_user(current_user_id, payload)
 
-            # -- read receipt --
             elif event_type == "read":
-                sender_id = data.get("sender_id")
+                sender_id = data.get("senderId")
 
                 service.mark_as_read(current_user_id, sender_id)
 
@@ -109,7 +124,7 @@ async def websocket_messages(
                 await manager.send_to_user(sender_id, {
                     "type": "read",
                     "data": {
-                        "by_user_id": current_user_id
+                        "byUserId": current_user_id
                     }
                 })
 
