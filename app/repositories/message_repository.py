@@ -15,10 +15,10 @@ class MessageRepository:
         limit: int = 50,
         offset: int = 0
     ) -> list[Message]:
-        messages = self.db_session.query(Message).filter(
-            (Message.sender_id == user_id) & (Message.receiver_id == other_user_id) |
+        messages = self.db_session.query(Message).filter(or_(
+            (Message.sender_id == user_id) & (Message.receiver_id == other_user_id),
             (Message.sender_id == other_user_id) & (Message.receiver_id == user_id)
-        ).order_by(Message.created_at.desc()).limit(limit).offset(offset).all()
+        )).order_by(Message.created_at.desc()).limit(limit).offset(offset).all()
 
         return messages
 

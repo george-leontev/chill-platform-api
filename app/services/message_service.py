@@ -28,6 +28,9 @@ class MessageService:
         return result
 
     def mark_as_read(self, user_id: int, sender_id: int) -> None:
+        if not user_id or not sender_id:
+            return
+
         self.message_repository.mark_as_read(user_id, sender_id)
 
     def get_conversation(self, user_id: int, other_user_id: int, limit: int = 50, offset: int = 0) -> MessagesModel:

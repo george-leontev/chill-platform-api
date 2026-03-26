@@ -1,4 +1,4 @@
-from http.client import HTTPException
+from fastapi import HTTPException
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
@@ -87,6 +87,7 @@ async def websocket_messages(
             data = await websocket.receive_json()
 
             event_type = data.get("type")
+            print(f"event_type: {event_type}")
 
             # -- new message --
             if event_type == "new_message":
@@ -116,7 +117,10 @@ async def websocket_messages(
                 await manager.send_to_user(current_user_id, payload)
 
             elif event_type == "read":
-                sender_id = data.get("senderId")
+                sender_id = data.get("sender_id")
+                print(f"herererer sender_id = {sender_id}")
+                if not sender_id:
+                    continue
 
                 service.mark_as_read(current_user_id, sender_id)
 
@@ -145,10 +149,5 @@ async def websocket_messages(
         manager.disconnect(current_user_id)
 
         # notify all active connections that user went offline
-        await manager.broadcast({
-            "type": "online_status",
-            "data": {
-                "user_id": current_user_id,
-                "online": False
-            }
-        })
+        await manager.broadcast({"type": "user_offline", "userId": current_user_id})
+        
