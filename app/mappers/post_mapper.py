@@ -1,4 +1,4 @@
-from models.post.post_author_model import PostAuthorModel
+from models.user_info_model import UserInfoModel
 from data_models.post_data_model import Post
 from data_models.post_likes_data_model import PostLike
 from models.post.post_model import PostModel, PostsModel
@@ -29,11 +29,10 @@ class PostMapper:
             title=post.title,
             content=post.content,
             created_at=post.created_at,
-            author=PostAuthorModel(
+            author=UserInfoModel(
                 id=post.user.id,
                 first_name= post.user.first_name,
                 last_name= post.user.last_name,
-                age=post.user.age,
                 username=post.user.username,
                 email=post.user.email
             ),

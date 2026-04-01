@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List
-from models.post.post_author_model import PostAuthorModel
+from models.user_info_model import UserInfoModel
 from models.post.post_like_info_model import PostLikeInfoModel
 from models.app_base_model import AppBaseModel
 from models.post_image_model import PostImageModel
@@ -15,7 +15,7 @@ class PostModel(AppBaseModel):
 
     created_at: datetime
 
-    author: PostAuthorModel
+    author: UserInfoModel
 
     images: List[PostImageModel] = []
 

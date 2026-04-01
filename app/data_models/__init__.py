@@ -4,6 +4,7 @@ from data_models.user_data_model import User
 from data_models.post_data_model import Post
 from data_models.post_likes_data_model import PostLike
 from data_models.post_image_data_model import PostImage
+from data_models.profile_data_model import Profile
 from data_models.enums.friend_status_data_model import FriendStatus
 from data_models.enums.user_role_data_model import UserRole
 
@@ -12,6 +13,7 @@ __all__ = [
     "Message",
     "User",
     "Post",
+    "Profile",
     "FriendStatus",
     "UserRole",
     "PostLike",

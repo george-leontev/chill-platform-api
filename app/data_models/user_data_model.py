@@ -13,7 +13,6 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
-    age = Column(String, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     role_id = Column(Integer, ForeignKey("user_role.id"), nullable=False, default=UserRoleEnum.USER)
@@ -24,3 +23,4 @@ class User(Base):
     posts = relationship("Post", foreign_keys="Post.user_id", back_populates="user")
     role = relationship("UserRole", foreign_keys=[role_id])
     liked_posts = relationship("PostLike", backref="user", cascade="all, delete-orphan")
+    profile = relationship("Profile", uselist=False, back_populates="user", cascade="all, delete-orphan")
