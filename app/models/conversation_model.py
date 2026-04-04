@@ -24,3 +24,7 @@ class ConversationModel(AppBaseModel):
 
 class ConversationsModel(AppBaseModel):
     items: List[ConversationModel]
+    total: int
+    page: int
+    size: int
+    pages: int

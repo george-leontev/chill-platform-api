@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from data_models.user_data_model import User
@@ -19,30 +19,36 @@ def get_friend_service(db_session: Session = Depends(get_db)) -> FriendService:
 
 @router.get('/friends', response_model=FriendsModel)
 async def get_accepted_friends(
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         friend_service: FriendService = Depends(get_friend_service)
     ):
-    friends = friend_service.get_accepted_friends(current_user.id)
+    friends = friend_service.get_accepted_friends(current_user.id, page, size)
 
     return friends
 
 
 @router.get('/friends/requests/incoming', response_model=FriendsModel)
 async def get_incoming_requests(
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         friend_service: FriendService = Depends(get_friend_service)
     ):
-    incoming = friend_service.get_incoming_requests(current_user.id)
+    incoming = friend_service.get_incoming_requests(current_user.id, page, size)
 
     return incoming
 
 
 @router.get('/friends/requests/outgoing', response_model=FriendsModel)
 async def get_outgoing_requests(
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         friend_service: FriendService = Depends(get_friend_service)
     ):
-    outgoing = friend_service.get_outgoing_requests(current_user.id)
+    outgoing = friend_service.get_outgoing_requests(current_user.id, page, size)
 
     return outgoing
 

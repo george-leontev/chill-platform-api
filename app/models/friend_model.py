@@ -17,3 +17,7 @@ class FriendModel(AppBaseModel):
 
 class FriendsModel(AppBaseModel):
     items: List[FriendModel]
+    total: int
+    page: int
+    size: int
+    pages: int

@@ -20,9 +20,14 @@ class ConversationMapper:
         return result
 
     @staticmethod
-    def to_conversations_model(rows) -> ConversationsModel:
+    def to_conversations_model(rows, total: int, page: int, size: int) -> ConversationsModel:
+        pages = (total + size - 1) // size
         result = ConversationsModel(
-            items=[ConversationMapper.to_conversation_model(row) for row in rows]
+            items=[ConversationMapper.to_conversation_model(row) for row in rows],
+            total=total,
+            page=page,
+            size=size,
+            pages=pages
         )
 
         return result

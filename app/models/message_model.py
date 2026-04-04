@@ -19,3 +19,7 @@ class MessageModel(AppBaseModel):
 
 class MessagesModel(AppBaseModel):
     items: List[MessageModel]
+    total: int
+    page: int
+    size: int
+    pages: int

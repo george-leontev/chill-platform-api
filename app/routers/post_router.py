@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from database import get_db
 from models.enums.user_role_enum import UserRoleEnum
@@ -21,28 +21,34 @@ def get_post_service(db_session: Session = Depends(get_db)) -> PostService:
 
 @router.get('/posts', response_model=PostsModel)
 async def get_all_posts(
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
         post_service: PostService = Depends(get_post_service)
     ):
-    posts = post_service.get_all(current_user.id)
+    posts = post_service.get_all(page, size, current_user.id)
 
     return posts
 
 @router.get('/posts/my', response_model=PostsModel)
 async def get_my_posts(
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
         post_service: PostService = Depends(get_post_service)
     ):
-    posts = post_service.get_my_posts(current_user.id)
+    posts = post_service.get_my_posts(current_user.id, page, size)
 
     return posts
 
 @router.get('/posts/liked', response_model=PostsModel)
 async def get_liked_posts(
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
         post_service: PostService = Depends(get_post_service)
     ):
-    posts = post_service.get_liked_posts(current_user.id)
+    posts = post_service.get_liked_posts(current_user.id, page, size)
 
     return posts
 

@@ -1,6 +1,6 @@
 from fastapi import HTTPException
 
-from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from models.conversation_model import ConversationsModel
 from database import get_db
@@ -22,22 +22,24 @@ def get_message_service(db_session: Session = Depends(get_db)) -> MessageService
 
 @router.get('/messages/conversations', response_model=ConversationsModel)
 async def get_conversations(
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         service: MessageService = Depends(get_message_service)
     ):
-    conversations = service.get_conversations(current_user.id)
+    conversations = service.get_conversations(current_user.id, page, size)
 
     return conversations
 
 @router.get('/messages/{user_id}', response_model=MessagesModel)
 async def get_conversation(
         user_id: int,
-        limit: int = 50,
-        offset: int = 0,
+        page: int = Query(1, ge=1),
+        size: int = Query(10, ge=1, le=100),
         current_user: User = Depends(authorize([UserRoleEnum.USER, UserRoleEnum.MODERATOR])),
         service: MessageService = Depends(get_message_service)
     ):
-    messages = service.get_conversation(current_user.id, user_id, limit, offset)
+    messages = service.get_conversation(current_user.id, user_id, page, size)
 
     return messages
 

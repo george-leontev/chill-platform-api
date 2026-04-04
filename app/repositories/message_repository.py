@@ -12,15 +12,17 @@ class MessageRepository:
         self,
         user_id: int,
         other_user_id: int,
-        limit: int = 50,
-        offset: int = 0
-    ) -> list[Message]:
-        messages = self.db_session.query(Message).filter(or_(
+        page: int,
+        size: int
+    ) -> tuple[list[Message], int]:
+        query = self.db_session.query(Message).filter(or_(
             (Message.sender_id == user_id) & (Message.receiver_id == other_user_id),
             (Message.sender_id == other_user_id) & (Message.receiver_id == user_id)
-        )).order_by(Message.created_at.desc()).limit(limit).offset(offset).all()
+        ))
+        total = query.count()
+        messages = query.order_by(Message.created_at.desc()).offset((page - 1) * size).limit(size).all()
 
-        return messages
+        return messages, total
 
     def create(self, sender_id: int, receiver_id: int, content: str) -> Message:
         message = Message(
@@ -43,7 +45,7 @@ class MessageRepository:
 
         self.db_session.commit()
 
-    def get_conversations(self, user_id: int) -> list:
+    def get_conversations(self, user_id: int, page: int, size: int) -> tuple[list, int]:
         partner_id_case = case(
             (Message.sender_id == user_id, Message.receiver_id),
             else_=Message.sender_id
@@ -64,7 +66,7 @@ class MessageRepository:
             .scalar_subquery()
         )
 
-        conversations = self.db_session.query(
+        query = self.db_session.query(
             partner_id_case.label("partner_id"),
             User.id.label("partner_user_id"),
             User.username.label("partner_username"),
@@ -87,6 +89,13 @@ class MessageRepository:
             User.username,
             User.first_name,
             User.last_name
-        ).order_by(func.max(Message.created_at).desc()).all()
+        )
+        
+        # To get total count of conversations, we need to count the groups
+        total = self.db_session.query(partner_id_case).filter(
+            or_(Message.sender_id == user_id, Message.receiver_id == user_id)
+        ).distinct().count()
 
-        return conversations
+        conversations = query.order_by(func.max(Message.created_at).desc()).offset((page - 1) * size).limit(size).all()
+
+        return conversations, total

@@ -7,14 +7,14 @@ class PostRepository:
         self.db_session = db_session
 
 
-    def get_all(self) -> list[Post]:
-        posts = self. \
-                db_session. \
-                query(Post). \
-                options(joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)). \
-                all()
+    def get_all(self, page: int, size: int) -> tuple[list[Post], int]:
+        query = self.db_session.query(Post).options(
+            joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)
+        )
+        total = query.count()
+        posts = query.order_by(Post.created_at.desc()).offset((page - 1) * size).limit(size).all()
 
-        return posts
+        return posts, total
 
     def get_by_id(self, post_id: int) -> Post | None:
         post = self. \
@@ -26,15 +26,14 @@ class PostRepository:
 
         return post
 
-    def get_by_user_id(self, user_id: int) -> list[Post]:
-        posts = self. \
-                db_session. \
-                query(Post). \
-                options(joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)). \
-                filter(Post.user_id == user_id). \
-                all()
+    def get_by_user_id(self, user_id: int, page: int, size: int) -> tuple[list[Post], int]:
+        query = self.db_session.query(Post).options(
+            joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)
+        ).filter(Post.user_id == user_id)
+        total = query.count()
+        posts = query.order_by(Post.created_at.desc()).offset((page - 1) * size).limit(size).all()
 
-        return posts
+        return posts, total
 
     def create(self, title: str, content: str, user_id: int, image_urls: list[str] = None) -> Post:
         post = Post(title=title, content=content, user_id=user_id)

@@ -17,9 +17,14 @@ class MessageMapper:
         return result
 
     @staticmethod
-    def to_list_model(messages: list[Message]) -> MessagesModel:
+    def to_list_model(messages: list[Message], total: int, page: int, size: int) -> MessagesModel:
+        pages = (total + size - 1) // size
         result = MessagesModel(
-            items=[MessageMapper.to_model(message) for message in messages]
+            items=[MessageMapper.to_model(message) for message in messages],
+            total=total,
+            page=page,
+            size=size,
+            pages=pages
         )
 
         return result

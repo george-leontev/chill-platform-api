@@ -45,9 +45,14 @@ class PostMapper:
         return result
 
     @staticmethod
-    def to_list_model(posts: list[Post], current_user_id: int = None) -> PostsModel:
+    def to_list_model(posts: list[Post], total: int, page: int, size: int, current_user_id: int = None) -> PostsModel:
+        pages = (total + size - 1) // size
         result = PostsModel(
-            items=[PostMapper.to_model(post, current_user_id) for post in posts]
+            items=[PostMapper.to_model(post, current_user_id) for post in posts],
+            total=total,
+            page=page,
+            size=size,
+            pages=pages
         )
 
         return result

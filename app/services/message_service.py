@@ -33,16 +33,16 @@ class MessageService:
 
         self.message_repository.mark_as_read(user_id, sender_id)
 
-    def get_conversation(self, user_id: int, other_user_id: int, limit: int = 50, offset: int = 0) -> MessagesModel:
-        messages = self.message_repository.get_conversation(user_id, other_user_id, limit, offset)
+    def get_conversation(self, user_id: int, other_user_id: int, page: int, size: int) -> MessagesModel:
+        messages, total = self.message_repository.get_conversation(user_id, other_user_id, page, size)
 
-        result = self.message_mapper.to_list_model(messages)
+        result = self.message_mapper.to_list_model(messages, total, page, size)
 
         return result
 
-    def get_conversations(self, user_id: int) -> ConversationsModel:
-        conversations = self.message_repository.get_conversations(user_id)
+    def get_conversations(self, user_id: int, page: int, size: int) -> ConversationsModel:
+        conversations, total = self.message_repository.get_conversations(user_id, page, size)
 
-        result = self.conversation_mapper.to_conversations_model(conversations)
+        result = self.conversation_mapper.to_conversations_model(conversations, total, page, size)
 
         return result

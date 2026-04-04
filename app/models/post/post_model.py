@@ -27,3 +27,7 @@ class PostModel(AppBaseModel):
 
 class PostsModel(AppBaseModel):
     items: List[PostModel]
+    total: int
+    page: int
+    size: int
+    pages: int

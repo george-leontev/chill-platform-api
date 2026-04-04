@@ -8,29 +8,35 @@ class FriendRepository:
     def __init__(self, db_session: Session):
         self.db_session = db_session
 
-    def get_accepted_friends(self, user_id: int) -> list[Friend]:
-        friends = self.db_session.query(Friend).filter(
+    def get_accepted_friends(self, user_id: int, page: int, size: int) -> tuple[list[Friend], int]:
+        query = self.db_session.query(Friend).filter(
             or_(Friend.user_id == user_id, Friend.friend_id == user_id),
             Friend.status_id == FriendStatusEnum.ACCEPTED
-        ).all()
+        )
+        total = query.count()
+        friends = query.order_by(Friend.created_at.desc()).offset((page - 1) * size).limit(size).all()
 
-        return friends
+        return friends, total
 
-    def get_incoming_requests(self, user_id: int) -> list[Friend]:
-        incoming = self.db_session.query(Friend).filter(
+    def get_incoming_requests(self, user_id: int, page: int, size: int) -> tuple[list[Friend], int]:
+        query = self.db_session.query(Friend).filter(
             Friend.friend_id == user_id,
             Friend.status_id == FriendStatusEnum.PENDING
-        ).all()
+        )
+        total = query.count()
+        incoming = query.order_by(Friend.created_at.desc()).offset((page - 1) * size).limit(size).all()
 
-        return incoming
+        return incoming, total
 
-    def get_outgoing_requests(self, user_id: int) -> list[Friend]:
-        outgoing = self.db_session.query(Friend).filter(
+    def get_outgoing_requests(self, user_id: int, page: int, size: int) -> tuple[list[Friend], int]:
+        query = self.db_session.query(Friend).filter(
             Friend.user_id == user_id,
             Friend.status_id == FriendStatusEnum.PENDING
-        ).all()
+        )
+        total = query.count()
+        outgoing = query.order_by(Friend.created_at.desc()).offset((page - 1) * size).limit(size).all()
 
-        return outgoing
+        return outgoing, total
 
     def get_friendship(self, user_id: int, friend_id: int) -> Friend | None:
         friendship = self.db_session.query(Friend).filter(

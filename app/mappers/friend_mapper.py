@@ -16,9 +16,14 @@ class FriendMapper:
         return result
 
     @staticmethod
-    def to_list_model(friends: list[Friend]) -> FriendsModel:
+    def to_list_model(friends: list[Friend], total: int, page: int, size: int) -> FriendsModel:
+        pages = (total + size - 1) // size
         result = FriendsModel(
-            items=[FriendMapper.to_model(friend) for friend in friends]
+            items=[FriendMapper.to_model(friend) for friend in friends],
+            total=total,
+            page=page,
+            size=size,
+            pages=pages
         )
 
         return result

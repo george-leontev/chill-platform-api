@@ -29,11 +29,13 @@ class PostLikeRepository:
 
         return like, like_count
 
-    def get_liked_posts(self, user_id: int) -> list[Post]:
-        posts = self.db_session.query(Post).\
+    def get_liked_posts(self, user_id: int, page: int, size: int) -> tuple[list[Post], int]:
+        query = self.db_session.query(Post).\
             join(PostLike).\
             filter(PostLike.user_id == user_id).\
-            options(joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)).\
-            all()
+            options(joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes))
 
-        return posts
+        total = query.count()
+        posts = query.order_by(Post.created_at.desc()).offset((page - 1) * size).limit(size).all()
+
+        return posts, total

@@ -36,10 +36,10 @@ class PostService:
         # Return URL path (relative to static files)
         return f"/uploads/posts/{unique_filename}"
 
-    def get_all(self, current_user_id: int = None) -> PostsModel:
-        posts = self.post_repository.get_all()
+    def get_all(self, page: int, size: int, current_user_id: int = None) -> PostsModel:
+        posts, total = self.post_repository.get_all(page, size)
 
-        result = self.mapper.to_list_model(posts, current_user_id)
+        result = self.mapper.to_list_model(posts, total, page, size, current_user_id)
 
         return result
 
@@ -53,17 +53,17 @@ class PostService:
 
         return result
 
-    def get_my_posts(self, user_id: int) -> PostsModel:
-        posts = self.post_repository.get_by_user_id(user_id)
+    def get_my_posts(self, user_id: int, page: int, size: int) -> PostsModel:
+        posts, total = self.post_repository.get_by_user_id(user_id, page, size)
 
-        result = self.mapper.to_list_model(posts, user_id)
+        result = self.mapper.to_list_model(posts, total, page, size, user_id)
 
         return result
 
-    def get_liked_posts(self, user_id: int) -> PostsModel:
-        posts = self.like_repository.get_liked_posts(user_id)
+    def get_liked_posts(self, user_id: int, page: int, size: int) -> PostsModel:
+        posts, total = self.like_repository.get_liked_posts(user_id, page, size)
 
-        result = self.mapper.to_list_model(posts, user_id)
+        result = self.mapper.to_list_model(posts, total, page, size, user_id)
 
         return result
 
