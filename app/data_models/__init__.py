@@ -7,6 +7,7 @@ from data_models.post_image_data_model import PostImage
 from data_models.profile_data_model import Profile
 from data_models.enums.friend_status_data_model import FriendStatus
 from data_models.enums.user_role_data_model import UserRole
+from data_models.support_ticket_data_model import SupportTicket, SupportMessage
 
 __all__ = [
     "Friend",
@@ -17,5 +18,7 @@ __all__ = [
     "FriendStatus",
     "UserRole",
     "PostLike",
-    "PostImage"
+    "PostImage",
+    "SupportTicket",
+    "SupportMessage"
 ]

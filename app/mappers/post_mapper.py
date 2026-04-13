@@ -34,7 +34,8 @@ class PostMapper:
                 first_name= post.user.first_name,
                 last_name= post.user.last_name,
                 username=post.user.username,
-                email=post.user.email
+                email=post.user.email,
+                avatar_url=post.user.profile.avatar_url if hasattr(post.user, 'profile') and post.user.profile else None,
             ),
             images=PostImageMapper.to_list_model(post.images) if post.images else [],
             is_liked=is_liked,

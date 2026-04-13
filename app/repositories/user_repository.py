@@ -10,6 +10,26 @@ class UserRepository:
     def __init__(self, db_session: Session):
         self.db_session = db_session
 
+    def get_by_email(self, email: str) -> User | None:
+        return self.db_session.query(User).filter(User.email == email).first()
+
+    def get_by_username(self, username: str) -> User | None:
+        return self.db_session.query(User).filter(User.username == username).first()
+
+    def create(self, username: str, email: str, first_name: str, last_name: str, age: int, hashed_password: str) -> User:
+        user = User(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            age=age,
+            password=hashed_password,
+        )
+        self.db_session.add(user)
+        self.db_session.commit()
+        self.db_session.refresh(user)
+        return user
+
     def get_by_id(self, user_id: int) -> User | None:
         return self.db_session.query(User).filter(User.id == user_id).first()
 

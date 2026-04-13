@@ -22,7 +22,8 @@ class ProfileMapper:
                 username=profile.user.username,
                 first_name=profile.user.first_name,
                 last_name=profile.user.last_name,
-                email=profile.user.email
+                email=profile.user.email,
+                avatar_url=profile.avatar_url,
             )
 
         calculated_age = None

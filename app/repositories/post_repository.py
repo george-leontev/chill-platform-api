@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session, joinedload
 from data_models.post_data_model import Post
 from data_models.post_image_data_model import PostImage
+from data_models.user_data_model import User
+from data_models.profile_data_model import Profile
 
 class PostRepository:
     def __init__(self, db_session: Session):
@@ -9,7 +11,9 @@ class PostRepository:
 
     def get_all(self, page: int, size: int) -> tuple[list[Post], int]:
         query = self.db_session.query(Post).options(
-            joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)
+            joinedload(Post.user).joinedload(User.profile),
+            joinedload(Post.images),
+            joinedload(Post.likes)
         )
         total = query.count()
         posts = query.order_by(Post.created_at.desc()).offset((page - 1) * size).limit(size).all()
@@ -20,7 +24,11 @@ class PostRepository:
         post = self. \
                 db_session. \
                 query(Post). \
-                options(joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)). \
+                options(
+                    joinedload(Post.user).joinedload(User.profile),
+                    joinedload(Post.images),
+                    joinedload(Post.likes)
+                ). \
                 filter(Post.id == post_id). \
                 one_or_none()
 
@@ -28,7 +36,9 @@ class PostRepository:
 
     def get_by_user_id(self, user_id: int, page: int, size: int) -> tuple[list[Post], int]:
         query = self.db_session.query(Post).options(
-            joinedload(Post.user), joinedload(Post.images), joinedload(Post.likes)
+            joinedload(Post.user).joinedload(User.profile),
+            joinedload(Post.images),
+            joinedload(Post.likes)
         ).filter(Post.user_id == user_id)
         total = query.count()
         posts = query.order_by(Post.created_at.desc()).offset((page - 1) * size).limit(size).all()

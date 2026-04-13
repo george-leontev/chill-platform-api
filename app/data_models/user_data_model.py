@@ -13,6 +13,7 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
+    age = Column(Integer, nullable=False, default=0)
     password = Column(String, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     role_id = Column(Integer, ForeignKey("user_role.id"), nullable=False, default=UserRoleEnum.USER)

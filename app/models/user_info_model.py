@@ -7,3 +7,4 @@ class UserInfoModel(AppBaseModel):
     first_name: str
     last_name: str
     email: str
+    avatar_url: str | None = None
