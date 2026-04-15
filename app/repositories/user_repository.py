@@ -45,6 +45,20 @@ class UserRepository:
         self.db_session.refresh(user)
         return user
 
+    def search_users(self, query: str) -> list[User]:
+        """Search users by username, first_name, or last_name (case-insensitive)"""
+        search_pattern = f"%{query}%"
+        return (
+            self.db_session.query(User)
+            .filter(
+                (User.username.ilike(search_pattern)) |
+                (User.first_name.ilike(search_pattern)) |
+                (User.last_name.ilike(search_pattern))
+            )
+            .limit(20)
+            .all()
+        )
+
     def get_stats(self) -> dict:
         users_count = self.db_session.query(func.count(User.id)).scalar()
         posts_count = self.db_session.query(func.count(Post.id)).scalar()

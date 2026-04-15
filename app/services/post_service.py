@@ -43,6 +43,11 @@ class PostService:
 
         return result
 
+    def get_all_not_paginated(self, current_user_id: int = None) -> list[PostModel]:
+        """Возвращает все посты без пагинации"""
+        posts = self.post_repository.get_all_not_paginated()
+        return [self.mapper.to_model(post, current_user_id) for post in posts]
+
     def get_by_id(self, post_id: int, current_user_id: int = None) -> PostModel:
         post = self.post_repository.get_by_id(post_id)
 

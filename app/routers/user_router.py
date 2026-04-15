@@ -37,3 +37,11 @@ async def get_stats(
     user_service: UserService = Depends(get_user_service)
 ):
     return user_service.get_stats()
+
+@router.get('/users/search', response_model=list[UserModel])
+async def search_users(
+    q: str = Query(..., min_length=1, max_length=100),
+    current_user = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
+    user_service: UserService = Depends(get_user_service)
+):
+    return user_service.search_users(q)

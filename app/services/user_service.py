@@ -26,3 +26,8 @@ class UserService:
     def get_stats(self) -> StatsModel:
         stats = self.user_repository.get_stats()
         return StatsModel(**stats)
+
+    def search_users(self, query: str) -> list[UserModel]:
+        """Search users by username, first_name, or last_name"""
+        users = self.user_repository.search_users(query)
+        return [self.mapper.to_model(user) for user in users]

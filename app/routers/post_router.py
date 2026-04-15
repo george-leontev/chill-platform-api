@@ -30,6 +30,15 @@ async def get_all_posts(
 
     return posts
 
+@router.get('/not-paginated', response_model=list[PostModel])
+async def get_all_posts_not_paginated(
+        current_user: User = Depends(authorize([UserRoleEnum.MODERATOR, UserRoleEnum.USER])),
+        post_service: PostService = Depends(get_post_service)
+    ):
+    posts = post_service.get_all_not_paginated(current_user.id)
+
+    return posts
+
 @router.get('/posts/my', response_model=PostsModel)
 async def get_my_posts(
         page: int = Query(1, ge=1),

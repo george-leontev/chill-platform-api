@@ -20,6 +20,19 @@ class PostRepository:
 
         return posts, total
 
+    def get_all_not_paginated(self) -> list[Post]:
+        """Возвращает все посты без пагинации"""
+        return (
+            self.db_session.query(Post)
+            .options(
+                joinedload(Post.user).joinedload(User.profile),
+                joinedload(Post.images),
+                joinedload(Post.likes)
+            )
+            .order_by(Post.created_at.desc())
+            .all()
+        )
+
     def get_by_id(self, post_id: int) -> Post | None:
         post = self. \
                 db_session. \
